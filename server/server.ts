@@ -16,9 +16,13 @@ const {
   FRONTEND_URL,
 } = process.env;
 
-/** Strips trailing slashes and lowercases — env values are often pasted loosely. */
+/** Strips trailing slashes, quotes, and lowercases — env values are often pasted loosely. */
 function normalizeOrigin(origin: string) {
-  return origin.trim().replace(/\/+$/, "").toLowerCase();
+  return origin
+    .trim()
+    .replace(/^["']+|["']+$/g, "")
+    .replace(/\/+$/, "")
+    .toLowerCase();
 }
 
 /** Primary frontend origin — also the OAuth post-login redirect target. */
@@ -289,6 +293,16 @@ app.use(express.json());
 /* Health check for uptime monitors and platform probes. */
 app.get("/healthz", (_req: Request, res: Response) => {
   res.json({ ok: true });
+});
+
+/* Temporary CORS diagnostic — remove once the frontend origin connects. */
+app.get("/debug/origins", (_req: Request, res: Response) => {
+  res.json({
+    frontendOrigin: FRONTEND_ORIGIN,
+    extraOrigins,
+    raw: FRONTEND_URL ?? null,
+    hasEnv: Boolean(FRONTEND_URL),
+  });
 });
 
 /* Spotify Login */
