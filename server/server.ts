@@ -302,16 +302,6 @@ app.get("/healthz", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
-/* Temporary CORS diagnostic — remove once the frontend origin connects. */
-app.get("/debug/origins", (_req: Request, res: Response) => {
-  res.json({
-    frontendOrigin: FRONTEND_ORIGIN,
-    extraOrigins,
-    raw: FRONTEND_URL ?? null,
-    hasEnv: Boolean(FRONTEND_URL),
-  });
-});
-
 /* Spotify Login */
 
 app.get("/api/spotify/login", (_req: Request, res: Response) => {
