@@ -47,7 +47,9 @@ const extraOrigins = restOrigins;
 function isAllowedOrigin(origin: string) {
   const normalized = normalizeOrigin(origin);
 
-  if (extraOrigins.includes(normalized)) return true;
+  if (normalized === FRONTEND_ORIGIN || extraOrigins.includes(normalized)) {
+    return true;
+  }
 
   try {
     const { hostname } = new URL(normalized);
