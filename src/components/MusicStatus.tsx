@@ -98,7 +98,7 @@ export default function MusicStatus() {
 
   return (
     <aside
-      className="reveal fixed right-4 bottom-4 z-50 w-[calc(100%-2rem)] max-w-[320px] sm:right-5 sm:bottom-5"
+      className="reveal z-50 sm:fixed sm:right-5 sm:bottom-5 sm:w-[calc(100%-2rem)] sm:max-w-[320px]"
       title={`${track.name} — ${track.artist} · ${formatTime(progress)} / ${formatTime(duration)}`}
     >
       <div className="relative overflow-hidden rounded-2xl border border-line bg-paper/90 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.35)] backdrop-blur-md">

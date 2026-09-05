@@ -207,7 +207,7 @@ export default function App() {
   return (
     <div
       id="top"
-      className="mx-auto w-full max-w-4xl px-5 pt-14 pb-24 sm:px-8 sm:pt-20 sm:pb-28"
+      className="mx-auto w-full max-w-4xl px-5 pt-14 pb-6 sm:px-8 sm:pt-20 sm:pb-28"
     >
       <header className="reveal">
         {/* Name + navigation */}
@@ -277,16 +277,12 @@ export default function App() {
         </div>
       </header>
 
-      {/* Outside the animated header — a transformed ancestor would
-          capture the widget's fixed positioning. */}
-      <MusicStatus />
-
       <main>
         {/* About */}
-        <section className="reveal py-14 sm:py-20" style={{ animationDelay: "0.08s" }}>
+        <section className="reveal py-10 sm:py-14" style={{ animationDelay: "0.08s" }}>
           <SectionLabel>About</SectionLabel>
 
-          <p className="mt-8 max-w-2xl font-display text-[26px] leading-[1.3] text-ink sm:text-[32px]">
+          <p className="mt-6 max-w-2xl font-display text-[26px] leading-[1.3] text-ink sm:text-[32px]">
             I’m a software engineer passionate about architecting and building{" "}
             <em className="text-accent-ink">scalable, reliable, and maintainable</em>{" "}
             systems from the ground up.
@@ -301,7 +297,7 @@ export default function App() {
           </p>
 
           {/* Stack */}
-          <ul className="mt-10 flex max-w-2xl flex-wrap items-center gap-x-5 gap-y-3 text-muted">
+          <ul className="mt-8 flex max-w-2xl flex-wrap items-center gap-x-5 gap-y-3 text-muted">
             {stack.map((tool) => (
               <li key={tool.name}>
                 <span
@@ -317,10 +313,15 @@ export default function App() {
           </ul>
         </section>
 
+        {/* Now playing — inline between about and work on mobile,
+            floating card on desktop. Lives outside animated ancestors
+            so its fixed positioning isn't captured on desktop. */}
+        <MusicStatus />
+
         {/* Work */}
         <section
           id="work"
-          className="reveal scroll-mt-14 py-14 sm:py-20"
+          className="reveal scroll-mt-14 py-10 sm:py-14"
           style={{ animationDelay: "0.24s" }}
         >
           <SectionLabel meta={`(0${projects.length})`}>Selected Work</SectionLabel>
@@ -382,7 +383,7 @@ export default function App() {
 
         {/* Ghost wordmark */}
         <div aria-hidden className="full-bleed select-none overflow-hidden">
-          <p className="-mb-[0.18em] text-center font-display text-[16vw] leading-[0.8] text-ink/[0.045]">
+          <p className="text-center font-display text-[16vw] leading-[0.9] text-ink/[0.045]">
             OLUWAFUNMBI
           </p>
         </div>
