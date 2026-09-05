@@ -1,0 +1,188 @@
+/* Typography — Basic for body text, Instrument Serif for display,
+   Roboto Mono for meta labels. */
+@import url("https://fonts.googleapis.com/css2?family=Basic&family=Instrument+Serif:ital@0;1&family=Roboto+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+/* --------------------------------
+   Design tokens
+--------------------------------- */
+@theme {
+  /* Palette — single source of truth. Use as Tailwind utilities,
+     e.g. text-muted, bg-paper. */
+  --color-paper: #f7f7f4; /* page & widget background */
+  --color-ink: #0a0a0a; /* primary text */
+  --color-ink-soft: #252525; /* headings & track titles */
+  --color-muted: #5f665f; /* subtitle & meta labels */
+  --color-body: #656a65; /* long-form paragraphs */
+  --color-subtle: #777c77; /* secondary descriptions */
+  --color-faint: #8a8f89; /* inactive nav & artist name */
+  --color-fainter: #92968f; /* progress timestamps */
+  --color-placeholder: #e9e9e4; /* project preview background */
+  --color-placeholder-ink: #9a9e98; /* project preview label */
+  --color-line: #e4e4db; /* warm hairline borders */
+  --color-card-hi: #efefe9; /* preview gradient, light end */
+  --color-card-lo: #e3e3da; /* preview gradient, dark end */
+  --color-accent: #4a7856; /* moss green — dots, equalizer, progress */
+  --color-accent-ink: #3d6347; /* deeper moss — readable link text */
+
+  /* Fonts */
+  --font-sans: "Basic", sans-serif;
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-mono: "Roboto Mono", ui-monospace, monospace;
+}
+
+/* --------------------------------
+   Dark mode — toggled via the .dark class on <html>.
+   The class is set before paint (see index.html): from localStorage
+   when the visitor has chosen, otherwise from the system preference.
+--------------------------------- */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-paper: #131512;
+  --color-ink: #e9ebe6;
+  --color-ink-soft: #cdd2c9;
+  --color-muted: #a4ac9f;
+  --color-body: #99a294;
+  --color-subtle: #828b7d;
+  --color-faint: #6c7468;
+  --color-fainter: #5a6156;
+  --color-placeholder: #1e221d;
+  --color-placeholder-ink: #6c7468;
+  --color-line: #2b2e28;
+  --color-card-hi: #1d211c;
+  --color-card-lo: #171a16;
+  --color-accent: #7fae8d;
+  --color-accent-ink: #92c19f;
+}
+
+.dark ::selection {
+  background: rgba(127, 174, 141, 0.32);
+}
+
+/* --------------------------------
+   Base
+--------------------------------- */
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(74, 120, 86, 0.28);
+}
+
+/* Fine film grain over the paper — keeps the flat background tactile. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Hidden scrollbars — intentional design choice. */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* --------------------------------
+   Helpers
+--------------------------------- */
+
+/* Break out of the content column for full-width strips. */
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+/* Animated underline that draws in from the left on hover. */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.3s ease;
+  padding-bottom: 1px;
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* Subtle dot texture for project preview placeholders. */
+.dot-grid {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+
+/* --------------------------------
+   Motion
+--------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal {
+  animation: rise 0.7s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+/* Now-playing equalizer bars. */
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq 0.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .eq-bar {
+    animation: none;
+  }
+}

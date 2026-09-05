@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Set the theme class before first paint to avoid a flash of the
+      // wrong theme. A stored choice wins; otherwise follow the system.
+      (() => {
+        const stored = localStorage.getItem("theme");
+        const dark = stored
+          ? stored === "dark"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) document.documentElement.classList.add("dark");
+      })();
+    </script>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cstyle%3Ecircle%7Bstroke:%230a0a0a%7D@media(prefers-color-scheme:dark)%7Bcircle%7Bstroke:%23e9ebe6%7D%7D%3C/style%3E%3Ccircle cx='32' cy='32' r='24' fill='none' stroke-width='7'/%3E%3C/svg%3E"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Oluwafunmbi — software engineer. Portfolio and selected work."
+    />
+    <meta name="theme-color" content="#f7f7f4" />
+    <title>Oluwafunmbi — Software Engineer</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
