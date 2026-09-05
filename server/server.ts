@@ -12,11 +12,11 @@ const {
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
   SPOTIFY_REDIRECT_URI,
-  FRONTEND_URL = "http://localhost:5174",
+  FRONTEND_URL,
 } = process.env;
 
 /** Primary frontend origin — also the OAuth post-login redirect target. */
-const [primaryOrigin = "", ...restOrigins] = FRONTEND_URL.split(",");
+const [primaryOrigin = "", ...restOrigins] = (FRONTEND_URL || "").split(",");
 const FRONTEND_ORIGIN = primaryOrigin.trim();
 
 /** Extra allowed origins (comma-separated list in FRONTEND_URL). */
