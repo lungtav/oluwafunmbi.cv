@@ -16,11 +16,16 @@ const {
   FRONTEND_URL,
 } = process.env;
 
-/** Strips trailing slashes, quotes, and lowercases — env values are often pasted loosely. */
+/**
+ * Strips trailing slashes and quotes, lowercases, and upgrades http to https —
+ * env values are often pasted loosely, and browsers always send https origins
+ * for https sites.
+ */
 function normalizeOrigin(origin: string) {
   return origin
     .trim()
     .replace(/^["']+|["']+$/g, "")
+    .replace(/^http:\/\//i, "https://")
     .replace(/\/+$/, "")
     .toLowerCase();
 }
