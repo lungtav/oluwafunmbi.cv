@@ -70,7 +70,13 @@ const projects: Project[] = [
   },
 ];
 
-const socials = ["GitHub", "LinkedIn", "Email"];
+const socials = [
+  { name: "GitHub", href: "https://github.com/lungtav" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/oluwafunmbi" },
+  { name: "Email", href: "mailto:oluwafunmbi10@gmail.com" },
+];
+
+const contactEmail = "mailto:oluwafunmbi10@gmail.com";
 
 const stack: { name: string; Icon: IconType }[] = [
   { name: "Node.js", Icon: SiNodedotjs },
@@ -347,7 +353,7 @@ export default function App() {
           </p>
 
           <a
-            href="#"
+            href={contactEmail}
             className="link-underline mt-7 inline-block font-mono text-[11px] uppercase tracking-[0.22em] text-accent-ink"
           >
             Say hello →
@@ -360,11 +366,14 @@ export default function App() {
           <div className="flex items-center gap-6">
             {socials.map((social) => (
               <a
-                key={social}
-                href="#"
+                key={social.name}
+                href={social.href}
+                {...(social.href.startsWith("http")
+                  ? { target: "_blank", rel: "noreferrer" }
+                  : {})}
                 className="transition-colors hover:text-accent-ink"
               >
-                {social}
+                {social.name}
               </a>
             ))}
 
