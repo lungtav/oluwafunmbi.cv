@@ -16,12 +16,19 @@ const {
   FRONTEND_URL,
 } = process.env;
 
+/** Strips trailing slashes and lowercases — env values are often pasted loosely. */
+function normalizeOrigin(origin: string) {
+  return origin.trim().replace(/\/+$/, "").toLowerCase();
+}
+
 /** Primary frontend origin — also the OAuth post-login redirect target. */
-const [primaryOrigin = "", ...restOrigins] = (FRONTEND_URL || "").split(",");
-const FRONTEND_ORIGIN = primaryOrigin.trim();
+const [primaryOrigin = "", ...restOrigins] = (FRONTEND_URL || "")
+  .split(",")
+  .map(normalizeOrigin);
+const FRONTEND_ORIGIN = primaryOrigin;
 
 /** Extra allowed origins (comma-separated list in FRONTEND_URL). */
-const extraOrigins = restOrigins.map((origin) => origin.trim());
+const extraOrigins = restOrigins;
 
 /**
  * Accepts any local or private-network origin, so Vite port drift,
@@ -29,10 +36,12 @@ const extraOrigins = restOrigins.map((origin) => origin.trim());
  * keeping FRONTEND_URL in sync.
  */
 function isAllowedOrigin(origin: string) {
-  if (extraOrigins.includes(origin)) return true;
+  const normalized = normalizeOrigin(origin);
+
+  if (extraOrigins.includes(normalized)) return true;
 
   try {
-    const { hostname } = new URL(origin);
+    const { hostname } = new URL(normalized);
 
     return (
       hostname === "localhost" ||
