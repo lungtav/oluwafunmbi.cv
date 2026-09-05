@@ -17,6 +17,11 @@ dist-ssr
 .env.*
 !.env.example
 
+# Server build output (tsc)
+server/server.js
+server/*.d.ts
+server/*.js.map
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

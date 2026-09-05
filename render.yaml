@@ -1,0 +1,22 @@
+# Render blueprint — deploys the Spotify now-playing server.
+# In Render: New → Blueprint → pick this repo, then fill in the env vars.
+services:
+  - type: web
+    name: oluwafunmbi-music
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: SPOTIFY_REDIRECT_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: SPOTIFY_REFRESH_TOKEN
+        sync: false

@@ -6,7 +6,11 @@
   "main": "server.ts",
   "scripts": {
     "dev": "tsx watch server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "license": "ISC",
   "dependencies": {

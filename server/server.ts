@@ -12,6 +12,7 @@ const {
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
   SPOTIFY_REDIRECT_URI,
+  SPOTIFY_REFRESH_TOKEN,
   FRONTEND_URL,
 } = process.env;
 
@@ -124,7 +125,17 @@ async function getTokens(): Promise<SpotifyTokens | null> {
 
     return JSON.parse(data) as SpotifyTokens;
   } catch {
-    return null;
+    // Ephemeral hosts (free tiers) wipe the disk on restart — re-seed
+    // from a long-lived refresh token provided via env.
+    if (!SPOTIFY_REFRESH_TOKEN) return null;
+
+    return {
+      access_token: "",
+      refresh_token: SPOTIFY_REFRESH_TOKEN,
+      token_type: "Bearer",
+      expires_in: 0,
+      expires_at: 0,
+    };
   }
 }
 
@@ -266,6 +277,11 @@ app.use(
 
 app.use(express.json());
 
+/* Health check for uptime monitors and platform probes. */
+app.get("/healthz", (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
+
 /* Spotify Login */
 
 app.get("/api/spotify/login", (_req: Request, res: Response) => {
@@ -324,6 +340,13 @@ app.get("/api/spotify/callback", async (req: Request, res: Response) => {
     };
 
     await saveTokens(tokens);
+
+    // Free-tier hosts wipe the disk on restart — surface the refresh token
+    // once so it can be copied into the SPOTIFY_REFRESH_TOKEN env var.
+    console.log(
+      "Spotify refresh token — store me in SPOTIFY_REFRESH_TOKEN:",
+      tokens.refresh_token,
+    );
 
     res.redirect(FRONTEND_ORIGIN);
   } catch (error) {
