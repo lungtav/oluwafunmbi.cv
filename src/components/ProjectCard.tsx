@@ -1,11 +1,13 @@
 import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
+import { SiGithub } from "react-icons/si";
 
 type ProjectCardProps = {
   name: string;
   description: string;
-  link: string;
-  /** Shown as the link text; defaults to the link itself. */
-  linkLabel?: string;
+  /** Live deployment URL (preview target + visit icon). */
+  liveUrl?: string;
+  /** GitHub repo URL (source icon). */
+  githubUrl?: string;
   /** Position in the work list, used for the ghost index number. */
   index: number;
   /** Optional app screenshot, framed inside the preview. */
@@ -15,16 +17,18 @@ type ProjectCardProps = {
 export default function ProjectCard({
   name,
   description,
-  link,
-  linkLabel,
+  liveUrl,
+  githubUrl,
   index,
   image,
 }: ProjectCardProps) {
+  // Preview goes to the live site when available, otherwise the repo.
+  const previewHref = liveUrl ?? githubUrl ?? "#";
   return (
     <article className="group">
       {/* Preview */}
       <a
-        href={link}
+        href={previewHref}
         target="_blank"
         rel="noreferrer"
         className="relative block aspect-[16/10] overflow-hidden rounded-xl border border-line bg-gradient-to-br from-card-hi to-card-lo transition-all duration-500 group-hover:-translate-y-1 group-hover:border-accent/40 group-hover:shadow-[0_18px_40px_-18px_rgba(74,120,86,0.22)]"
@@ -70,17 +74,35 @@ export default function ProjectCard({
       </a>
 
       {/* Details */}
-      <div className="mt-4 flex items-baseline justify-between gap-4">
+      <div className="mt-4 flex items-center justify-between gap-4">
         <h3 className="text-[15px] font-medium text-ink-soft">{name}</h3>
 
-        <a
-          href={link}
-          target="_blank"
-          rel="noreferrer"
-          className="link-underline shrink-0 font-mono text-[11px] tracking-[0.04em] text-accent-ink"
-        >
-          {linkLabel ?? link}
-        </a>
+        <span className="flex shrink-0 items-center gap-4 text-muted">
+          {liveUrl && (
+            <a
+              href={liveUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={`Visit ${name} live site`}
+              aria-label={`Visit ${name} live site`}
+              className="block transition-colors hover:text-accent"
+            >
+              <ArrowUpRightIcon aria-hidden className="h-[18px] w-[18px]" />
+            </a>
+          )}
+          {githubUrl && (
+            <a
+              href={githubUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={`View ${name} source on GitHub`}
+              aria-label={`View ${name} source on GitHub`}
+              className="block transition-colors hover:text-accent"
+            >
+              <SiGithub aria-hidden className="h-4 w-4" />
+            </a>
+          )}
+        </span>
       </div>
 
       <p className="mt-1.5 max-w-lg text-[13px] leading-6 text-subtle">

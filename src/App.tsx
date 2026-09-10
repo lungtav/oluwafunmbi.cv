@@ -47,9 +47,10 @@ function applyThemeToDom(theme: Theme) {
 type Project = {
   name: string;
   description: string;
-  link: string;
-  /** Shown as the link text; defaults to the link itself. */
-  linkLabel?: string;
+  /** Live deployment URL (preview target + "Visit" link). */
+  liveUrl?: string;
+  /** GitHub repo URL ("Source" link). */
+  githubUrl?: string;
   /** Optional app screenshot, framed inside the card preview. */
   image?: string;
 };
@@ -59,14 +60,14 @@ const projects: Project[] = [
     name: "kivo",
     description:
       "Realtime chat platform — spaces, channels, direct messages, and profiles, in a black-and-white interface with light and dark modes.",
-    link: "https://github.com/lungtav/kivo",
-    linkLabel: "github.com/lungtav/kivo",
+    liveUrl: "https://kivo-drab.vercel.app/",
+    githubUrl: "https://github.com/lungtav/kivo",
     image: "/kivo.png",
   },
   {
     name: "rally",
     description: "Gym facility booking system",
-    link: "rally.com",
+    githubUrl: "https://github.com/lungtav/rally",
   },
 ];
 
@@ -217,22 +218,17 @@ export default function App() {
     >
       <header className="reveal">
         {/* Name + navigation */}
-        <div className="flex items-start justify-between gap-6 pb-8">
-          <div>
+        <div className="pb-8">
+          <div className="flex items-start justify-between gap-6">
             <h1 className="font-display text-5xl leading-[0.95] tracking-[-0.01em] text-ink sm:text-7xl">
               OLUWAFUNMBI<span className="text-accent">.</span>
             </h1>
 
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.26em] text-muted">
-              Software Engineer
-            </p>
-          </div>
-
-          <nav className="hidden pt-3 sm:block">
-            <div className="flex flex-col items-end gap-2.5 font-mono text-[11px] uppercase tracking-[0.18em]">
-              <a href="/" className="link-underline text-ink">
-                Home
-              </a>
+            <nav className="hidden pt-3 sm:block" aria-label="Primary">
+              <div className="flex flex-col items-end gap-2.5 font-mono text-[11px] uppercase tracking-[0.18em]">
+                <a href="/" className="link-underline text-ink">
+                  Home
+                </a>
 
               <a
                 href="#work"
@@ -240,12 +236,32 @@ export default function App() {
                   event.preventDefault();
                   scrollToSection("#work");
                 }}
-                className="text-faint transition-colors hover:text-ink"
+                className="link-underline text-faint transition-colors hover:text-ink"
               >
                 Work
               </a>
+              </div>
+            </nav>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 font-mono text-[11px] uppercase">
+            <p className="tracking-[0.26em] text-muted">Software Engineer</p>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 tracking-[0.18em]">
+              {socials.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  {...(social.href.startsWith("http")
+                    ? { target: "_blank", rel: "noreferrer" }
+                    : {})}
+                  className="link-underline text-faint transition-colors hover:text-ink"
+                >
+                  {social.name}
+                </a>
+              ))}
             </div>
-          </nav>
+          </div>
         </div>
 
         {/* Location + local time */}
@@ -360,34 +376,19 @@ export default function App() {
           </a>
         </div>
 
-        <div className="mt-16 flex flex-col justify-between gap-3 border-t border-line py-6 font-mono text-[10px] uppercase tracking-[0.18em] text-subtle sm:flex-row sm:items-center">
+        <div className="mt-16 flex flex-row items-center justify-between gap-3 border-t border-line py-6 font-mono text-[10px] uppercase tracking-[0.18em] text-subtle">
           <span>© MMXXVI Oluwafunmbi</span>
 
-          <div className="flex items-center gap-6">
-            {socials.map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                {...(social.href.startsWith("http")
-                  ? { target: "_blank", rel: "noreferrer" }
-                  : {})}
-                className="transition-colors hover:text-accent-ink"
-              >
-                {social.name}
-              </a>
-            ))}
-
-            <a
-              href="#top"
-              onClick={(event) => {
-                event.preventDefault();
-                scrollToTop();
-              }}
-              className="text-accent-ink transition-opacity hover:opacity-60"
-            >
-              Top ↑
-            </a>
-          </div>
+          <a
+            href="#top"
+            onClick={(event) => {
+              event.preventDefault();
+              scrollToTop();
+            }}
+            className="text-accent-ink transition-opacity hover:opacity-60"
+          >
+            Top ↑
+          </a>
         </div>
 
         {/* Ghost wordmark */}
