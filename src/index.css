@@ -1,188 +1,533 @@
-/* Typography — Basic for body text, Instrument Serif for display,
-   Roboto Mono for meta labels. */
-@import url("https://fonts.googleapis.com/css2?family=Basic&family=Instrument+Serif:ital@0;1&family=Roboto+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
-/* --------------------------------
-   Design tokens
---------------------------------- */
-@theme {
-  /* Palette — single source of truth. Use as Tailwind utilities,
-     e.g. text-muted, bg-paper. */
-  --color-paper: #f7f7f4; /* page & widget background */
-  --color-ink: #0a0a0a; /* primary text */
-  --color-ink-soft: #252525; /* headings & track titles */
-  --color-muted: #5f665f; /* subtitle & meta labels */
-  --color-body: #656a65; /* long-form paragraphs */
-  --color-subtle: #777c77; /* secondary descriptions */
-  --color-faint: #8a8f89; /* inactive nav & artist name */
-  --color-fainter: #92968f; /* progress timestamps */
-  --color-placeholder: #e9e9e4; /* project preview background */
-  --color-placeholder-ink: #9a9e98; /* project preview label */
-  --color-line: #e4e4db; /* warm hairline borders */
-  --color-card-hi: #efefe9; /* preview gradient, light end */
-  --color-card-lo: #e3e3da; /* preview gradient, dark end */
-  --color-accent: #4a7856; /* moss green — dots, equalizer, progress */
-  --color-accent-ink: #3d6347; /* deeper moss — readable link text */
-
-  /* Fonts */
-  --font-sans: "Basic", sans-serif;
-  --font-display: "Instrument Serif", Georgia, serif;
-  --font-mono: "Roboto Mono", ui-monospace, monospace;
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/space-grotesk-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* --------------------------------
-   Dark mode — toggled via the .dark class on <html>.
-   The class is set before paint (see index.html): from localStorage
-   when the visitor has chosen, otherwise from the system preference.
---------------------------------- */
+@font-face {
+  font-family: "Caveat";
+  src: url("/fonts/caveat-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Caveat";
+  src: url("/fonts/caveat-500.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kalam";
+  src: url("/fonts/kalam-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kalam";
+  src: url("/fonts/kalam-700.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Patrick Hand";
+  src: url("/fonts/patrick-hand-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Shadows Into Light";
+  src: url("/fonts/shadows-into-light-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gochi Hand";
+  src: url("/fonts/gochi-hand-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Architects Daughter";
+  src: url("/fonts/architects-daughter-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Indie Flower";
+  src: url("/fonts/indie-flower-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dancing Script";
+  src: url("/fonts/dancing-script-400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dancing Script";
+  src: url("/fonts/dancing-script-500.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Caveat";
+  src: url("/fonts/caveat-600.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-paper: #ffffff;
+  --color-ink: #000;
+  --color-soft-ink: #555555;
+  --color-muted: #666666;
+  --color-line: #dedede;
+  --color-accent: #1558d6;
+  --color-accent-ink: #1049b5;
+  --font-sans: "Space Grotesk", Arial, sans-serif;
+  --font-mono: "Space Grotesk", Arial, sans-serif;
+  --font-hand: "Space Grotesk", Arial, sans-serif;
+  --font-kalam: "Kalam", cursive;
+  --font-patrick: "Patrick Hand", cursive;
+  --font-shadows: "Shadows Into Light", cursive;
+  --font-gochi: "Gochi Hand", cursive;
+  --font-architects: "Architects Daughter", cursive;
+  --font-indie: "Indie Flower", cursive;
+  --font-dancing: "Dancing Script", cursive;
+}
+
 :root {
   color-scheme: light;
 }
-
-.dark {
-  color-scheme: dark;
-  --color-paper: #131512;
-  --color-ink: #e9ebe6;
-  --color-ink-soft: #cdd2c9;
-  --color-muted: #a4ac9f;
-  --color-body: #99a294;
-  --color-subtle: #828b7d;
-  --color-faint: #6c7468;
-  --color-fainter: #5a6156;
-  --color-placeholder: #1e221d;
-  --color-placeholder-ink: #6c7468;
-  --color-line: #2b2e28;
-  --color-card-hi: #1d211c;
-  --color-card-lo: #171a16;
-  --color-accent: #7fae8d;
-  --color-accent-ink: #92c19f;
-}
-
-.dark ::selection {
-  background: rgba(127, 174, 141, 0.32);
-}
-
-/* --------------------------------
-   Base
---------------------------------- */
 
 body {
   margin: 0;
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
+  font-family: var(--font-hand);
+  font-size: 50px;
+  line-height: 1.35;
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: rgba(74, 120, 86, 0.28);
+  background: #dce8ff;
 }
 
-/* Fine film grain over the paper — keeps the flat background tactile. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-a:focus-visible,
-button:focus-visible {
+a:focus-visible {
   outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline-offset: 4px;
 }
 
-/* Hidden scrollbars — intentional design choice. */
-* {
-  scrollbar-width: none;
+.portfolio-shell {
+  width: min(100% - 2.5rem, 560px);
+  margin: 0 auto;
+  padding: 2rem 0 2.5rem;
+  font-weight: 400;
 }
 
-*::-webkit-scrollbar {
-  display: none;
+.home-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* --------------------------------
-   Helpers
---------------------------------- */
-
-/* Break out of the content column for full-width strips. */
-.full-bleed {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+.home-shell .hero,
+.home-shell .contact-section {
+  animation: homepage-enter 420ms ease-out both;
 }
 
-/* Animated underline that draws in from the left on hover. */
-.link-underline {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0% 1px;
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  transition: background-size 0.3s ease;
-  padding-bottom: 1px;
+.home-shell .contact-section {
+  animation-delay: 100ms;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-line);
 }
 
-.link-underline:hover {
-  background-size: 100% 1px;
+.portfolio-shell h1,
+.portfolio-shell h2,
+.portfolio-shell p {
+  margin: 0;
 }
 
-/* Subtle dot texture for project preview placeholders. */
-.dot-grid {
-  background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 18px 18px;
+/* Keep the handwritten site intentionally even: every piece of copy uses
+   the same text size as the Projects link. */
+.portfolio-shell :is(h1, h2, p, a, span) {
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  letter-spacing: normal !important;
 }
 
-/* --------------------------------
-   Motion
---------------------------------- */
+.portfolio-shell a {
+  color: inherit;
+  text-decoration: none;
+}
 
-@keyframes rise {
+.portfolio-shell a:hover {
+  color: var(--color-ink);
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-line);
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+}
+
+.brand {
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.masthead nav {
+  display: flex;
+  gap: 1.15rem;
+}
+
+.masthead nav a:last-child {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.eyebrow,
+.site-footer {
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 1.5rem;
+  color: var(--color-ink);
+}
+
+.hero p {
+  max-width: none;
+  margin-top: 1.25rem;
+  font-size: clamp(1.95rem, 4.7vw, 3.45rem);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.hero h2.intro-name {
+  margin-top: 1.25rem;
+  font-family: var(--font-hand);
+  font-size: clamp(1.95rem, 4.7vw, 3.45rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.hero > p:not(.eyebrow) {
+  margin-top: 1.4rem;
+  color: var(--color-ink);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.35;
+}
+
+.hero > p.intro-summary {
+  font-family: var(--font-hand);
+  font-weight: 400;
+}
+
+.home-shell .hero .intro-summary,
+.home-shell .hero p:not(.intro-name):not(.intro-summary) {
+  color: var(--color-soft-ink);
+}
+
+.home-shell .hero .music-status {
+  margin-top: 1rem;
+  color: var(--color-soft-ink);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.music-indicator {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--color-soft-ink);
+}
+
+.music-indicator.is-playing {
+  background: var(--color-ink);
+  animation: music-pulse 1.4s ease-in-out infinite;
+}
+
+.music-label::after {
+  content: "—";
+  margin-left: 0.35rem;
+}
+
+.music-track {
+  color: var(--color-soft-ink);
+}
+
+.music-status a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+@keyframes music-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.home-shell a {
+  color: var(--color-soft-ink);
+}
+
+.home-shell a:hover {
+  color: var(--color-ink);
+}
+
+.project-cta {
+  width: fit-content;
+  margin-top: 1.9rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.home-shell .project-cta:hover {
+  transform: translateX(4px);
+}
+
+.contact-section {
+  padding: 1.5rem 0 0;
+  border-top: 1px solid var(--color-line);
+}
+
+
+.contact-section h2 {
+  margin-top: 1.25rem;
+  font-size: clamp(1.45rem, 3.3vw, 2.15rem);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.45rem;
+  margin-top: 1.35rem;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.social-links a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: transform 160ms ease;
+}
+
+.home-shell .social-links a:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes homepage-enter {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
   }
-}
-
-.reveal {
-  animation: rise 0.7s cubic-bezier(0.2, 0.6, 0.2, 1) both;
-}
-
-/* Now-playing equalizer bars. */
-@keyframes eq {
-  0%,
-  100% {
-    transform: scaleY(0.35);
-  }
-
-  50% {
-    transform: scaleY(1);
-  }
-}
-
-.eq-bar {
-  transform-origin: bottom;
-  animation: eq 0.9s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .eq-bar {
+  .home-shell .hero,
+  .home-shell .contact-section {
     animation: none;
+  }
+
+  .music-indicator.is-playing {
+    animation: none;
+  }
+}
+
+.site-footer {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.projects-list {
+  padding: 0 0 3rem;
+  margin-top: 20vh;
+}
+
+.projects-shell--compact {
+  min-height: 100dvh;
+}
+
+.projects-shell--compact .projects-list {
+  padding-bottom: 0;
+}
+
+.projects-page-header {
+  position: relative;
+}
+
+.back-link {
+  position: absolute;
+  bottom: calc(100% + 0.65rem);
+  left: 0;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 4px !important;
+}
+
+.projects-list h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.03em;  
+}
+
+.projects-intro {
+  margin-top: 1rem !important;
+  color: var(--color-ink);
+  font-size: 1.2rem;
+}
+
+.project-cards {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.project-card {
+  border: 1px solid var(--color-line);
+  background: var(--color-paper);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  /* box-shadow: 4px 4px 0 var(--color-ink); */
+}
+
+.project-card-body {
+  padding: 1rem;
+}
+
+.project-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.projects-list h2 {
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.project-description {
+  margin-top: 0.5rem !important;
+  color: var(--color-ink);
+}
+
+.project-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.project-stack span {
+  padding: 0.1rem 0.1rem;
+  font-size: 0.7rem !important;
+}
+
+.project-links {
+  display: flex;
+  gap: 1.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+.project-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.project-links svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .portfolio-shell {
+    width: min(100% - 2.5rem, 590px);
+    padding-top: 1.5rem;
+  }
+
+  .hero {
+    padding-top: 0;
+  }
+
+  .contact-section {
+    padding: 1.5rem 0 0;
+  }
+
+  .projects-list {
+    margin-top: 28vh;
   }
 }

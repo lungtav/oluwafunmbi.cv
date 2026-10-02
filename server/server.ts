@@ -1,299 +1,299 @@
-import express from "express";
-import type { Request, Response } from "express";
-import cors from "cors";
-import "dotenv/config";
-import fs from "node:fs/promises";
+  import express from "express";
+  import type { Request, Response } from "express";
+  import cors from "cors";
+  import "dotenv/config";
+  import fs from "node:fs/promises";
 
-/* --------------------------------
-   Configuration
---------------------------------- */
+  /* --------------------------------
+    Configuration
+  --------------------------------- */
 
-const {
-  SPOTIFY_CLIENT_ID,
-  SPOTIFY_CLIENT_SECRET,
-  SPOTIFY_REDIRECT_URI,
-  SPOTIFY_REFRESH_TOKEN,
-  FRONTEND_URL,
-} = process.env;
+  const {
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET,
+    SPOTIFY_REDIRECT_URI,
+    SPOTIFY_REFRESH_TOKEN,
+    FRONTEND_URL,
+  } = process.env;
 
-/**
- * Strips trailing slashes and quotes, lowercases, and upgrades http to https —
- * env values are often pasted loosely, and browsers always send https origins
- * for https sites.
- */
-function normalizeOrigin(origin: string) {
-  return origin
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/^http:\/\//i, "https://")
-    .replace(/\/+$/, "")
-    .toLowerCase();
-}
-
-/** Primary frontend origin — also the OAuth post-login redirect target. */
-const [primaryOrigin = "", ...restOrigins] = (FRONTEND_URL || "")
-  .split(",")
-  .map(normalizeOrigin);
-const FRONTEND_ORIGIN = primaryOrigin;
-
-/** Extra allowed origins (comma-separated list in FRONTEND_URL). */
-const extraOrigins = restOrigins;
-
-/**
- * Accepts any local or private-network origin, so Vite port drift,
- * `vite preview`, and phone-over-Wi-Fi access all work without
- * keeping FRONTEND_URL in sync.
- */
-function isAllowedOrigin(origin: string) {
-  const normalized = normalizeOrigin(origin);
-
-  if (normalized === FRONTEND_ORIGIN || extraOrigins.includes(normalized)) {
-    return true;
+  /**
+   * Strips trailing slashes and quotes, lowercases, and upgrades http to https —
+   * env values are often pasted loosely, and browsers always send https origins
+   * for https sites.
+   */
+  function normalizeOrigin(origin: string) {
+    return origin
+      .trim()
+      .replace(/^["']+|["']+$/g, "")
+      .replace(/^http:\/\//i, "https://")
+      .replace(/\/+$/, "")
+      .toLowerCase();
   }
 
-  try {
-    const { hostname } = new URL(normalized);
+  /** Primary frontend origin — also the OAuth post-login redirect target. */
+  const [primaryOrigin = "", ...restOrigins] = (FRONTEND_URL || "")
+    .split(",")
+    .map(normalizeOrigin);
+  const FRONTEND_ORIGIN = primaryOrigin;
 
-    return (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.") ||
-      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
-    );
-  } catch {
-    return false;
+  /** Extra allowed origins (comma-separated list in FRONTEND_URL). */
+  const extraOrigins = restOrigins;
+
+  /**
+   * Accepts any local or private-network origin, so Vite port drift,
+   * `vite preview`, and phone-over-Wi-Fi access all work without
+   * keeping FRONTEND_URL in sync.
+   */
+  function isAllowedOrigin(origin: string) {
+    const normalized = normalizeOrigin(origin);
+
+    if (normalized === FRONTEND_ORIGIN || extraOrigins.includes(normalized)) {
+      return true;
+    }
+
+    try {
+      const { hostname } = new URL(normalized);
+
+      return (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+      );
+    } catch {
+      return false;
+    }
   }
-}
 
-const PORT = Number(process.env.PORT ?? 3001);
+  const PORT = Number(process.env.PORT ?? 3001);
 
-const LAST_TRACK_FILE = "./last-track.json";
-const TOKEN_FILE = "./spotify-token.json";
+  const LAST_TRACK_FILE = "./last-track.json";
+  const TOKEN_FILE = "./spotify-token.json";
 
-const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
-const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
-const SPOTIFY_API_URL = "https://api.spotify.com/v1";
+  const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
+  const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
+  const SPOTIFY_API_URL = "https://api.spotify.com/v1";
 
-const SCOPES = [
-  "user-read-currently-playing",
-  "user-read-recently-played",
-].join(" ");
+  const SCOPES = [
+    "user-read-currently-playing",
+    "user-read-recently-played",
+  ].join(" ");
 
-if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET || !SPOTIFY_REDIRECT_URI) {
-  throw new Error("Missing Spotify environment variables");
-}
+  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET || !SPOTIFY_REDIRECT_URI) {
+    throw new Error("Missing Spotify environment variables");
+  }
 
-/* --------------------------------
-   Types
---------------------------------- */
+  /* --------------------------------
+    Types
+  --------------------------------- */
 
-interface SpotifyTokens {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
-  expires_at: number;
-  scope?: string;
-}
+  interface SpotifyTokens {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+    expires_in: number;
+    expires_at: number;
+    scope?: string;
+  }
 
-interface SpotifyArtist {
-  name: string;
-}
+  interface SpotifyArtist {
+    name: string;
+  }
 
-interface SpotifyImage {
-  url: string;
-}
+  interface SpotifyImage {
+    url: string;
+  }
 
-interface SpotifyAlbum {
-  name: string;
-  images: SpotifyImage[];
-}
+  interface SpotifyAlbum {
+    name: string;
+    images: SpotifyImage[];
+  }
 
-interface SpotifyTrack {
-  id: string;
-  name: string;
-  artists: SpotifyArtist[];
-  album: SpotifyAlbum;
-  duration_ms: number;
-  external_urls?: {
-    spotify?: string;
-  };
-}
-
-/** Track shape served to the frontend and persisted to disk. */
-interface FormattedTrack {
-  id: string;
-  name: string;
-  artist: string;
-  album: string;
-  image: string | null;
-  url: string | null;
-}
-
-/* --------------------------------
-   File storage
---------------------------------- */
-
-async function saveTokens(tokens: SpotifyTokens) {
-  await fs.writeFile(TOKEN_FILE, JSON.stringify(tokens, null, 2), "utf8");
-}
-
-async function getTokens(): Promise<SpotifyTokens | null> {
-  try {
-    const data = await fs.readFile(TOKEN_FILE, "utf8");
-
-    return JSON.parse(data) as SpotifyTokens;
-  } catch {
-    // Ephemeral hosts (free tiers) wipe the disk on restart — re-seed
-    // from a long-lived refresh token provided via env.
-    if (!SPOTIFY_REFRESH_TOKEN) return null;
-
-    return {
-      access_token: "",
-      refresh_token: SPOTIFY_REFRESH_TOKEN,
-      token_type: "Bearer",
-      expires_in: 0,
-      expires_at: 0,
+  interface SpotifyTrack {
+    id: string;
+    name: string;
+    artists: SpotifyArtist[];
+    album: SpotifyAlbum;
+    duration_ms: number;
+    external_urls?: {
+      spotify?: string;
     };
   }
-}
 
-async function saveLastTrack(track: FormattedTrack) {
-  await fs.writeFile(LAST_TRACK_FILE, JSON.stringify(track, null, 2), "utf8");
-}
-
-async function getLastTrack(): Promise<FormattedTrack | null> {
-  try {
-    const data = await fs.readFile(LAST_TRACK_FILE, "utf8");
-
-    return JSON.parse(data) as FormattedTrack;
-  } catch {
-    return null;
-  }
-}
-
-/* --------------------------------
-   Spotify helpers
---------------------------------- */
-
-function basicAuthHeader() {
-  const credentials = Buffer.from(
-    `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
-  ).toString("base64");
-
-  return `Basic ${credentials}`;
-}
-
-/** Maps a raw Spotify track to the shape the frontend expects. */
-function formatTrack(track: SpotifyTrack): FormattedTrack {
-  return {
-    id: track.id,
-    name: track.name,
-    artist: track.artists.map((artist) => artist.name).join(", "),
-    album: track.album.name,
-    image: track.album.images?.[0]?.url ?? null,
-    url: track.external_urls?.spotify ?? null,
-  };
-}
-
-async function refreshAccessToken(): Promise<string> {
-  const tokens = await getTokens();
-
-  if (!tokens?.refresh_token) {
-    throw new Error("No Spotify refresh token available");
+  /** Track shape served to the frontend and persisted to disk. */
+  interface FormattedTrack {
+    id: string;
+    name: string;
+    artist: string;
+    album: string;
+    image: string | null;
+    url: string | null;
   }
 
-  const response = await fetch(SPOTIFY_TOKEN_URL, {
-    method: "POST",
-    headers: {
-      Authorization: basicAuthHeader(),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: tokens.refresh_token,
-    }),
-  });
+  /* --------------------------------
+    File storage
+  --------------------------------- */
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error("Spotify refresh error:", data);
-
-    throw new Error("Could not refresh Spotify token");
+  async function saveTokens(tokens: SpotifyTokens) {
+    await fs.writeFile(TOKEN_FILE, JSON.stringify(tokens, null, 2), "utf8");
   }
 
-  const updatedTokens: SpotifyTokens = {
-    ...tokens,
-    ...data,
-    refresh_token: data.refresh_token || tokens.refresh_token,
-    expires_at: Date.now() + data.expires_in * 1000,
-  };
+  async function getTokens(): Promise<SpotifyTokens | null> {
+    try {
+      const data = await fs.readFile(TOKEN_FILE, "utf8");
 
-  await saveTokens(updatedTokens);
+      return JSON.parse(data) as SpotifyTokens;
+    } catch {
+      // Ephemeral hosts (free tiers) wipe the disk on restart — re-seed
+      // from a long-lived refresh token provided via env.
+      if (!SPOTIFY_REFRESH_TOKEN) return null;
 
-  return updatedTokens.access_token;
-}
-
-/** Returns a valid access token, refreshing it if it is about to expire. */
-async function getAccessToken(): Promise<string> {
-  const tokens = await getTokens();
-
-  if (!tokens?.refresh_token) {
-    throw new Error("Spotify is not connected");
+      return {
+        access_token: "",
+        refresh_token: SPOTIFY_REFRESH_TOKEN,
+        token_type: "Bearer",
+        expires_in: 0,
+        expires_at: 0,
+      };
+    }
   }
 
-  const isValid =
-    tokens.access_token &&
-    tokens.expires_at &&
-    Date.now() < tokens.expires_at - 60_000;
-
-  if (isValid) {
-    return tokens.access_token;
+  async function saveLastTrack(track: FormattedTrack) {
+    await fs.writeFile(LAST_TRACK_FILE, JSON.stringify(track, null, 2), "utf8");
   }
 
-  return refreshAccessToken();
-}
+  async function getLastTrack(): Promise<FormattedTrack | null> {
+    try {
+      const data = await fs.readFile(LAST_TRACK_FILE, "utf8");
 
-/**
- * Calls the Spotify API, retrying once with a fresh token on 401.
- * Returns the global fetch Response — not the Express `Response` imported above.
- */
-async function spotifyRequest(endpoint: string): Promise<globalThis.Response> {
-  let accessToken = await getAccessToken();
+      return JSON.parse(data) as FormattedTrack;
+    } catch {
+      return null;
+    }
+  }
 
-  let response = await fetch(`${SPOTIFY_API_URL}${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  /* --------------------------------
+    Spotify helpers
+  --------------------------------- */
 
-  if (response.status === 401) {
-    accessToken = await refreshAccessToken();
+  function basicAuthHeader() {
+    const credentials = Buffer.from(
+      `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
+    ).toString("base64");
 
-    response = await fetch(`${SPOTIFY_API_URL}${endpoint}`, {
+    return `Basic ${credentials}`;
+  }
+
+  /** Maps a raw Spotify track to the shape the frontend expects. */
+  function formatTrack(track: SpotifyTrack): FormattedTrack {
+    return {
+      id: track.id,
+      name: track.name,
+      artist: track.artists.map((artist) => artist.name).join(", "),
+      album: track.album.name,
+      image: track.album.images?.[0]?.url ?? null,
+      url: track.external_urls?.spotify ?? null,
+    };
+  }
+
+  async function refreshAccessToken(): Promise<string> {
+    const tokens = await getTokens();
+
+    if (!tokens?.refresh_token) {
+      throw new Error("No Spotify refresh token available");
+    }
+
+    const response = await fetch(SPOTIFY_TOKEN_URL, {
+      method: "POST",
+      headers: {
+        Authorization: basicAuthHeader(),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: tokens.refresh_token,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Spotify refresh error:", data);
+
+      throw new Error("Could not refresh Spotify token");
+    }
+
+    const updatedTokens: SpotifyTokens = {
+      ...tokens,
+      ...data,
+      refresh_token: data.refresh_token || tokens.refresh_token,
+      expires_at: Date.now() + data.expires_in * 1000,
+    };
+
+    await saveTokens(updatedTokens);
+
+    return updatedTokens.access_token;
+  }
+
+  /** Returns a valid access token, refreshing it if it is about to expire. */
+  async function getAccessToken(): Promise<string> {
+    const tokens = await getTokens();
+
+    if (!tokens?.refresh_token) {
+      throw new Error("Spotify is not connected");
+    }
+
+    const isValid =
+      tokens.access_token &&
+      tokens.expires_at &&
+      Date.now() < tokens.expires_at - 60_000;
+
+    if (isValid) {
+      return tokens.access_token;
+    }
+
+    return refreshAccessToken();
+  }
+
+  /**
+   * Calls the Spotify API, retrying once with a fresh token on 401.
+   * Returns the global fetch Response — not the Express `Response` imported above.
+   */
+  async function spotifyRequest(endpoint: string): Promise<globalThis.Response> {
+    let accessToken = await getAccessToken();
+
+    let response = await fetch(`${SPOTIFY_API_URL}${endpoint}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
+    if (response.status === 401) {
+      accessToken = await refreshAccessToken();
+
+      response = await fetch(`${SPOTIFY_API_URL}${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    }
+
+    return response;
   }
 
-  return response;
-}
+  /* --------------------------------
+    App
+  --------------------------------- */
 
-/* --------------------------------
-   App
---------------------------------- */
+  const app = express();
 
-const app = express();
-
-app.use(
-  cors({
-    origin: (origin, callback) =>
-      callback(null, !origin || isAllowedOrigin(origin)),
-  }),
-);
+  app.use(
+    cors({
+      origin: (origin, callback) =>
+        callback(null, !origin || isAllowedOrigin(origin)),
+    }),
+  );
 
 app.use(express.json());
 
